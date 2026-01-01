@@ -8,6 +8,20 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      "/api": {
+        target: process.env.VITE_API_URL || "http://localhost:3004",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
+      },
+    },
+  },
+  build: {
+    target: "esnext",
+    minify: "terser",
+    sourcemap: mode === "production" ? false : true,
+    outDir: "dist",
+    assetsDir: "assets",
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
