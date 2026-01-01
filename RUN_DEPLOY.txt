@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# ============================================================================
+# DEPLOY SINGULAI FRONTEND - INSTRUÇÕES PARA EXECUÇÃO NO VPS
+# ============================================================================
+# 
+# Este arquivo contém o comando ONE-LINER para fazer deploy do frontend
+# Copie e execute DIRETAMENTE no terminal SSH do VPS (raiz@72.60.147.56)
+#
+# ============================================================================
+
+echo "
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   🚀 DEPLOY FRONTEND SINGULAI - VPS                       ║
+║                                                                            ║
+║  IP: 72.60.147.56                                                         ║
+║  Usuário: raiz                                                            ║
+║  Hostname: rodrigo.dev                                                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📋 PASSO 1: Conectar ao VPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ssh raiz@72.60.147.56
+
+  ou
+
+  ssh raiz@rodrigo.dev
+
+
+⚡ PASSO 2: Executar Deploy (ONE-LINER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Copie e cole NO TERMINAL DO VPS:
+
+  curl -fsSL https://raw.githubusercontent.com/GrupoWinS/frontMVP1/main/deploy-vps.sh | bash
+
+Ou, se preferir baixar e executar localmente:
+
+  wget https://raw.githubusercontent.com/GrupoWinS/frontMVP1/main/deploy-vps.sh
+  bash deploy-vps.sh
+
+
+✅ PASSO 3: Verificar Deploy
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  systemctl status singulai-frontend
+
+  ou ver logs em tempo real:
+
+  journalctl -u singulai-frontend -f
+
+
+📡 PASSO 4: Acessar Frontend
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Abra no navegador:
+
+  http://72.60.147.56:8080
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 URLS FINAIS DE PRODUÇÃO:
+
+  Frontend:        http://72.60.147.56:8080
+  Backend API:     http://72.60.147.56:3004/api/v1
+  API Swagger:     http://72.60.147.56:3004/api/docs
+
+
+🔍 COMANDOS ÚTEIS:
+
+  # Ver status dos dois serviços
+  systemctl status singulai-frontend
+  systemctl status singulai-api
+
+  # Ver logs
+  journalctl -u singulai-frontend -f
+  journalctl -u singulai-api -f
+
+  # Reiniciar
+  systemctl restart singulai-frontend
+
+  # Parar
+  systemctl stop singulai-frontend
+
+  # Iniciar
+  systemctl start singulai-frontend
+
+  # Atualizar código (fazer pull do GitHub)
+  cd /root/singulai-platform/frontend && git pull origin main && npm install && npm run build && systemctl restart singulai-frontend
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 CHECKLIST DE VALIDAÇÃO:
+
+  [ ] SSH conectado (raiz@72.60.147.56)
+  [ ] Script deploy-vps.sh executado
+  [ ] Frontend iniciando (systemctl status)
+  [ ] Backend rodando na porta 3004
+  [ ] Acessar http://72.60.147.56:8080
+  [ ] Conectar MetaMask (Sepolia testnet)
+  [ ] Testar endpoints da API
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⏱️  TEMPO ESTIMADO: 2-3 minutos
+
+📁 DIRETÓRIO DE DEPLOY: /root/singulai-platform/frontend
+🔧 CONFIGURAÇÃO: .env.production (criado automaticamente)
+🎯 PORTA FRONTEND: 8080
+🎯 PORTA BACKEND: 3004
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✨ Após o deploy estar rodando:
+
+  1. Abra http://72.60.147.56:8080 no navegador
+  2. Conecte sua carteira MetaMask (Sepolia testnet)
+  3. Navegue pelos módulos (Tokens, Staking, Avatar, etc)
+  4. Teste as integrações com a API
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🆘 PROBLEMAS?
+
+  1. Verifique se Backend está rodando:
+     systemctl status singulai-api
+
+  2. Verifique logs do Frontend:
+     journalctl -u singulai-frontend -n 50
+
+  3. Teste conectividade com API:
+     curl http://localhost:3004/api/v1/blockchain/health
+
+  4. Se port 8080 está em uso:
+     lsof -i :8080
+     kill -9 <PID>
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTAÇÃO:
+
+  DEPLOY_GUIDE.md   - Guia completo de deploy manual
+  QUICK_DEPLOY.md   - Instruções rápidas
+  deploy-vps.sh     - Script automatizado
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Sucesso! Frontend integrado com Backend no mesmo ambiente VPS! 🎉
+
+"
