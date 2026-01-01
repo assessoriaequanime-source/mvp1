@@ -300,8 +300,13 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* Logo invert for light theme */
-.theme-light .logo-adaptive,
-:root .logo-adaptive {
+/* Logo invert for light theme only */
+.theme-light .logo-adaptive {
   filter: brightness(0) saturate(100%);
+}
+
+/* Keep logo visible on dark themes */
+.theme-dark .logo-adaptive,
+.theme-cyberpunk .logo-adaptive {
+  filter: none;
 }
