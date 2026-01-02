@@ -6,7 +6,7 @@ const features = [
   {
     icon: User,
     title: "Digital Avatar",
-    description: "Create your unique blockchain identity. Your avatar represents you in the decentralized world.",
+    description: "Crie seu avatar inteligente com 4 módulos especializados: aprendizado em tempo real, validação de dados, conhecimento profissional e legado digital eterno.",
     gradient: "from-blue-500 to-cyan-500",
   },
   {
