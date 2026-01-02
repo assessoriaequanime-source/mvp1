@@ -142,9 +142,10 @@ export function useWallet() {
       } else {
         toast.success("Wallet connected!");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error connecting wallet:", error);
-      toast.error("Connection failed", { description: error.message });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error("Connection failed", { description: errorMessage });
       setState((prev) => ({ ...prev, isConnecting: false }));
     }
   }, []);
@@ -168,9 +169,10 @@ export function useWallet() {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}` }],
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Chain not added, add it
-      if (error.code === 4902) {
+      const err = error as { code?: number };
+      if (err.code === 4902) {
         try {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
@@ -208,6 +210,12 @@ export function useWallet() {
 // Type declaration for window.ethereum
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: {
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+      on: (event: string, handler: (...args: unknown[]) => void) => void;
+      removeListener: (event: string, handler: (...args: unknown[]) => void) => void;
+      selectedAddress?: string;
+      chainId?: string;
+    };
   }
 }

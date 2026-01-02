@@ -264,7 +264,7 @@ export default function TimeCapsulePage() {
           {/* Send Method Tabs */}
           <div>
             <label className="text-sm font-medium text-foreground mb-3 block">How to send?</label>
-            <Tabs value={sendMethod} onValueChange={(v) => setSendMethod(v as any)}>
+            <Tabs value={sendMethod} onValueChange={(v) => setSendMethod(v as "email" | "link")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="email" className="gap-2">
                   <Mail className="w-4 h-4" />
