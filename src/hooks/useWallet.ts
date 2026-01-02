@@ -29,6 +29,22 @@ export function useWallet() {
   // Check if already connected on mount
   useEffect(() => {
     const checkConnection = async () => {
+      // First, check if we have a stored wallet address from seed phrase or private key auth
+      const storedAddress = localStorage.getItem("user_wallet");
+      
+      if (storedAddress) {
+        // User authenticated with seed phrase or private key
+        setState({
+          address: storedAddress,
+          balance: null, // Will be fetched via React Query
+          chainId: SEPOLIA_CHAIN_ID,
+          isConnected: true,
+          isConnecting: false,
+        });
+        return;
+      }
+
+      // Fallback: check MetaMask connection
       if (typeof window.ethereum === "undefined") return;
       
       try {

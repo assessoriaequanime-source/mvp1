@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider } from "./contexts/app-context";
 import Index from "./pages/Index";
 import Connect from "./pages/Connect";
@@ -16,6 +16,18 @@ import LegacyPage from "./pages/dashboard/LegacyPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import NotFound from "./pages/NotFound";
 
+// Private route component
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("auth_token");
+  const wallet = localStorage.getItem("user_wallet");
+  
+  if (!token || !wallet) {
+    return <Navigate to="/connect" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -28,7 +40,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/connect" element={<Connect />} />
-            <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <DashboardLayout />
+                </PrivateRoute>
+              }
+            >
               <Route index element={<DashboardOverview />} />
               <Route path="tokens" element={<TokensPage />} />
               <Route path="staking" element={<StakingPage />} />

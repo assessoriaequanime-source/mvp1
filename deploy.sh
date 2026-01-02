@@ -42,7 +42,7 @@ if [ ! -f "$DEPLOY_DIR/.env.production" ]; then
   echo "⚙️ Criando .env.production..."
   cat > .env.production << EOF
 # API Backend - Production (VPS Hostinger)
-VITE_API_URL=http://localhost:3004/api/v1
+VITE_API_URL=https://singulai.site/api/v1
 VITE_API_TIMEOUT=30000
 VITE_API_RETRIES=3
 

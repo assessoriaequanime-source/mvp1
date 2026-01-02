@@ -1,9 +1,13 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { AddressDisplay } from "@/components/web3/address-display";
 import { useApp } from "@/contexts/app-context";
+import { useWallet } from "@/hooks/useWallet";
+import { toast } from "sonner";
 import { 
   User, 
   Globe, 
@@ -15,7 +19,8 @@ import {
   Sun,
   Moon,
   Sparkles,
-  Check
+  Check,
+  ArrowRight
 } from "lucide-react";
 
 const themes = [
@@ -30,7 +35,105 @@ const languages = [
 ];
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { language, setLanguage, theme, setTheme, t } = useApp();
+  const { address, disconnect } = useWallet();
+  
+  // Profile state
+  const [displayName, setDisplayName] = useState(
+    localStorage.getItem("profile_displayName") || ""
+  );
+  const [email, setEmail] = useState(
+    localStorage.getItem("profile_email") || ""
+  );
+  
+  // Notification preferences
+  const [emailNotifications, setEmailNotifications] = useState(
+    localStorage.getItem("pref_emailNotifications") !== "false"
+  );
+  const [browserNotifications, setBrowserNotifications] = useState(
+    localStorage.getItem("pref_browserNotifications") !== "false"
+  );
+  const [transactionAlerts, setTransactionAlerts] = useState(
+    localStorage.getItem("pref_transactionAlerts") !== "false"
+  );
+
+  /**
+   * Salvar perfil
+   */
+  const handleSaveProfile = () => {
+    localStorage.setItem("profile_displayName", displayName);
+    localStorage.setItem("profile_email", email);
+    toast.success("Profile saved successfully!");
+  };
+
+  /**
+   * Toggle notificações
+   */
+  const handleToggleNotification = (pref: string, value: boolean) => {
+    localStorage.setItem(pref, String(value));
+  };
+
+  /**
+   * Logout com limpeza completa e redirecionamento
+   */
+  const handleLogout = () => {
+    try {
+      // Limpar localStorage
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_wallet");
+      localStorage.removeItem("profile_displayName");
+      localStorage.removeItem("profile_email");
+      localStorage.removeItem("profile_completed");
+      localStorage.removeItem("pref_emailNotifications");
+      localStorage.removeItem("pref_browserNotifications");
+      localStorage.removeItem("pref_transactionAlerts");
+      localStorage.removeItem("airdrop_contact_type");
+      localStorage.removeItem("airdrop_contact_value");
+      localStorage.removeItem("airdrop_tx_hash");
+      
+      // Desconectar wallet
+      disconnect();
+      
+      toast.success("Logged out successfully!");
+      
+      // Redirecionar para connect
+      setTimeout(() => {
+        navigate("/connect", { replace: true });
+      }, 500);
+    } catch (error) {
+      toast.error("Error logging out");
+      console.error(error);
+    }
+  };
+
+  /**
+   * Mudar para outra carteira
+   */
+  const handleSwitchWallet = () => {
+    try {
+      // Limpar dados da carteira anterior
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_wallet");
+      localStorage.removeItem("profile_completed");
+      localStorage.removeItem("airdrop_contact_type");
+      localStorage.removeItem("airdrop_contact_value");
+      localStorage.removeItem("airdrop_tx_hash");
+      
+      // Desconectar wallet
+      disconnect();
+      
+      toast.success("Wallet disconnected. Please authenticate with another wallet.");
+      
+      // Redirecionar para connect
+      setTimeout(() => {
+        navigate("/connect", { replace: true });
+      }, 500);
+    } catch (error) {
+      toast.error("Error switching wallet");
+      console.error(error);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -51,13 +154,27 @@ export default function SettingsPage() {
         <div className="space-y-4 max-w-md">
           <div>
             <label className="text-sm text-muted-foreground mb-2 block">{t("settings.displayName")}</label>
-            <Input placeholder={t("settings.displayName")} />
+            <Input 
+              placeholder="Your name" 
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-sm text-muted-foreground mb-2 block">{t("settings.email")}</label>
-            <Input type="email" placeholder="your@email.com" />
+            <Input 
+              type="email" 
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-          <Button variant="default">{t("settings.saveProfile")}</Button>
+          <Button 
+            variant="default"
+            onClick={handleSaveProfile}
+          >
+            {t("settings.saveProfile")}
+          </Button>
         </div>
       </GlassCard>
 
@@ -178,12 +295,23 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div>
             <label className="text-sm text-muted-foreground mb-2 block">{t("settings.connectedWallet")}</label>
-            <AddressDisplay address="0x7F3a4B2c8D9E1f6A5B3C2D8E9F1A6B3C8D2E8B2c" />
+            <AddressDisplay address={address || "Not connected"} />
           </div>
           
           <div className="flex gap-3">
-            <Button variant="outline">{t("settings.switchWallet")}</Button>
-            <Button variant="outline" className="text-destructive hover:text-destructive gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleSwitchWallet}
+              className="gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              {t("settings.switchWallet")}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="text-destructive hover:text-destructive gap-2"
+              onClick={handleLogout}
+            >
               <LogOut className="w-4 h-4" />
               {t("settings.disconnect")}
             </Button>
@@ -206,7 +334,13 @@ export default function SettingsPage() {
               <p className="font-medium text-foreground">{t("settings.emailNotifications")}</p>
               <p className="text-sm text-muted-foreground">{t("settings.receiveUpdates")}</p>
             </div>
-            <Switch />
+            <Switch 
+              checked={emailNotifications}
+              onCheckedChange={(value) => {
+                setEmailNotifications(value);
+                handleToggleNotification("pref_emailNotifications", value);
+              }}
+            />
           </div>
           
           <div className="flex items-center justify-between">
@@ -214,7 +348,13 @@ export default function SettingsPage() {
               <p className="font-medium text-foreground">{t("settings.browserNotifications")}</p>
               <p className="text-sm text-muted-foreground">{t("settings.getNotified")}</p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={browserNotifications}
+              onCheckedChange={(value) => {
+                setBrowserNotifications(value);
+                handleToggleNotification("pref_browserNotifications", value);
+              }}
+            />
           </div>
           
           <div className="flex items-center justify-between">
@@ -222,7 +362,13 @@ export default function SettingsPage() {
               <p className="font-medium text-foreground">{t("settings.transactionAlerts")}</p>
               <p className="text-sm text-muted-foreground">{t("settings.notifyOnTransactions")}</p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={transactionAlerts}
+              onCheckedChange={(value) => {
+                setTransactionAlerts(value);
+                handleToggleNotification("pref_transactionAlerts", value);
+              }}
+            />
           </div>
         </div>
       </GlassCard>

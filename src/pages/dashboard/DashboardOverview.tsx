@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
-import { AddressDisplay } from "@/components/web3/address-display";
 import {
   Coins,
   Lock,
@@ -27,72 +26,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSglBalance, useSglTokenInfo, useAvatarBalance } from "@/hooks/useBlockchain";
+import { useUserStaking } from "@/hooks/useExtendedBlockchain";
+import { useWallet } from "@/hooks/useWallet";
+import { Skeleton } from "@/components/ui/skeleton";
+import ProfileSetup from "./ProfileSetup";
 import lauraAvatar from "@/assets/avatars/laura.png";
 import petraAvatar from "@/assets/avatars/leticia.png";
 import pedroAvatar from "@/assets/avatars/pedro.png";
 
-// Mock data
-const stats = {
-  balance: "2,847.50",
-  balanceUsd: "$4,271.25",
-  staked: "1,500.00",
-  stakedApy: "12%",
-  rewards: "124.75",
-  avatars: 3,
-};
-
-const avatars = [
+const avatarImages = [
   { id: 1, image: lauraAvatar },
   { id: 2, image: petraAvatar },
   { id: 3, image: pedroAvatar },
 ];
 
 const recentActivity = [
-  {
-    id: 1,
-    type: "receive",
-    description: "Received SGL",
-    amount: "+500.00 SGL",
-    time: "2 hours ago",
-    status: "completed",
-    txHash: "0x1234...5678",
-  },
-  {
-    id: 2,
-    type: "stake",
-    description: "Staked SGL",
-    amount: "-1,000.00 SGL",
-    time: "1 day ago",
-    status: "completed",
-    txHash: "0x2345...6789",
-  },
-  {
-    id: 3,
-    type: "reward",
-    description: "Staking Reward",
-    amount: "+24.75 SGL",
-    time: "2 days ago",
-    status: "completed",
-    txHash: "0x3456...7890",
-  },
-  {
-    id: 4,
-    type: "send",
-    description: "Sent SGL",
-    amount: "-100.00 SGL",
-    time: "3 days ago",
-    status: "completed",
-    txHash: "0x4567...8901",
-  },
-  {
-    id: 5,
-    type: "mint",
-    description: "Minted Avatar",
-    amount: "-50.00 SGL",
-    time: "5 days ago",
-    status: "completed",
-    txHash: "0x5678...9012",
-  },
+  // Atividades recentes aparecem aqui (vazio no primeiro acesso)
 ];
 
 const getActivityIcon = (type: string) => {
@@ -126,32 +76,58 @@ const getStatusIcon = (status: string) => {
 };
 
 export default function DashboardOverview() {
+  const { address } = useWallet();
+
+  // Queries
+  const { data: balanceData, isLoading: balanceLoading } = useSglBalance(address);
+  const { data: avatarBalance, isLoading: avatarLoading } = useAvatarBalance(address);
+  const { data: userStaking, isLoading: stakingLoading } = useUserStaking(address);
+
+  const formatNumber = (value: string | undefined) => {
+    if (!value) return "0.00";
+    const num = parseFloat(value);
+    return isNaN(num) ? "0.00" : num.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  };
+
   return (
     <div className="space-y-8">
+      {/* Profile Setup Modal (First Time Only) */}
+      <ProfileSetup />
+
       {/* Page header */}
       <div>
         <h1 className="text-h3 font-bold text-foreground">Overview</h1>
         <p className="text-muted-foreground mt-1">Welcome back to your SingulAI dashboard</p>
       </div>
 
+      {/* Empty Wallet Alert */}
+      {!balanceLoading && parseFloat(balanceData?.balance || "0") === 0 && (
+        <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-700 dark:text-amber-400">
+            <strong>Wallet Created!</strong> Your new wallet has 0 SGL tokens. 
+            Get started by <Link to="/dashboard/tokens" className="underline font-semibold hover:no-underline">requesting tokens via Airdrop</Link> or using the Faucet.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Stats grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="SGL Balance"
-          value={stats.balance}
-          subtitle={stats.balanceUsd}
+          value={balanceLoading ? <Skeleton className="h-8 w-24" /> : formatNumber(balanceData?.balance)}
+          subtitle={balanceLoading ? "" : `≈ $${(parseFloat(balanceData?.balance || "0") * 1.5).toFixed(2)}`}
           icon={Coins}
-          trend={{ value: 12.5, isPositive: true }}
         />
         <StatCard
           title="Staked Amount"
-          value={stats.staked}
-          subtitle={`${stats.stakedApy} APY`}
+          value={stakingLoading ? <Skeleton className="h-8 w-24" /> : formatNumber(userStaking?.staked || "0")}
+          subtitle={stakingLoading ? "" : "12% APY"}
           icon={Lock}
         />
         <StatCard
           title="Pending Rewards"
-          value={stats.rewards}
+          value={stakingLoading ? <Skeleton className="h-8 w-24" /> : formatNumber(userStaking?.rewards || "0")}
           icon={Gift}
           action={
             <Button variant="default" size="sm" className="w-full">
@@ -161,11 +137,11 @@ export default function DashboardOverview() {
         />
         <StatCard
           title="NFT Avatars"
-          value={stats.avatars}
+          value={avatarLoading ? <Skeleton className="h-8 w-8" /> : formatNumber(avatarBalance?.balance || "0")}
           icon={User}
           action={
             <div className="flex -space-x-3">
-              {avatars.map((avatar) => (
+              {avatarImages.slice(0, 3).map((avatar) => (
                 <div
                   key={avatar.id}
                   className="w-10 h-10 rounded-full border-2 border-background overflow-hidden"
@@ -223,7 +199,7 @@ export default function DashboardOverview() {
             View All
           </Button>
         </div>
-        
+
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

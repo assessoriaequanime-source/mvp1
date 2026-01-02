@@ -1,0 +1,207 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              CHECKLIST DE DEPLOY - FRONTEND SINGULAI                        ║
+║                                                                              ║
+║              VPS: 72.60.147.56 | Usuário: raiz | Porta: 8080              ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+📋 PRÉ-DEPLOY (Antes de executar)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] SSH conectado: ssh raiz@72.60.147.56
+  [ ] Usuário é root: whoami → root
+  [ ] Node.js instalado: node -v → v18+
+  [ ] npm instalado: npm -v → 8+
+  [ ] git instalado: git --version
+  [ ] Disco com espaço: df -h → +2GB disponível
+  [ ] Sem processo na porta 8080: lsof -i :8080 (se tiver, kill)
+
+
+⚡ DEPLOY (Execute isto no VPS)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Execute o ONE-LINER:
+      
+      curl -fsSL https://raw.githubusercontent.com/GrupoWinS/frontMVP1/main/deploy-vps.sh | bash
+
+  [ ] Aguarde conclusão (2-3 minutos)
+  [ ] Script retorna "✅ DEPLOY CONCLUÍDO COM SUCESSO"
+
+
+✅ PÓS-DEPLOY (Validação - Execute após deploy)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Service Status:
+      systemctl status singulai-frontend → deve estar RUNNING
+
+  [ ] Teste Local (no VPS):
+      curl http://localhost:8080 → deve retornar HTML
+
+  [ ] Teste Backend:
+      curl http://localhost:3004/api/v1/blockchain/health → JSON
+
+  [ ] Verifique Logs:
+      journalctl -u singulai-frontend -n 5 → sem erros
+
+  [ ] Process Check:
+      ps aux | grep "npm run preview" → deve estar rodando
+
+
+🌐 ACESSO REMOTO (Do seu computador)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Abra navegador: http://72.60.147.56:8080
+  [ ] Aguarde carregar
+  [ ] Veja logo SingulAI
+  [ ] Console sem erros (F12)
+  [ ] Conecte MetaMask (Sepolia testnet)
+
+
+📊 FUNCIONALIDADE (Teste as features)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Página carrega completamente
+  [ ] MetaMask conecta
+  [ ] Ver dados de wallet
+  [ ] Navegar para dashboard
+  [ ] Acessar módulo de Tokens
+  [ ] Acessar módulo de Staking
+  [ ] Acessar módulo de Avatar
+  [ ] Acessar módulo de TimeCapsule
+  [ ] Acessar módulo de Legacy
+  [ ] Botões respondem
+  [ ] Sem erro 404 ou 500
+
+
+⚙️  INTEGRAÇÃO COM BACKEND
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Frontend conecta ao Backend:
+      curl http://localhost:3004/api/v1/blockchain/health → OK
+
+  [ ] Endpoints respondendo:
+      curl http://localhost:3004/api/v1/blockchain/status → JSON
+
+  [ ] Swagger acessível:
+      http://72.60.147.56:3004/api/docs → Swagger UI
+
+
+🔧 MANUTENÇÃO (Compreender operação básica)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Saber reiniciar:
+      systemctl restart singulai-frontend
+
+  [ ] Saber parar:
+      systemctl stop singulai-frontend
+
+  [ ] Saber iniciar:
+      systemctl start singulai-frontend
+
+  [ ] Saber ver logs:
+      journalctl -u singulai-frontend -f
+
+  [ ] Saber atualizar código:
+      cd /root/singulai-platform/frontend && git pull && npm install
+
+
+📁 ESTRUTURA NO VPS
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Diretório criado: /root/singulai-platform/frontend
+
+  [ ] Arquivo .env.production existe:
+      cat .env.production
+
+  [ ] Node_modules instalado:
+      ls node_modules/ | head -5
+
+  [ ] Dist compilado:
+      ls dist/ | head -5
+
+  [ ] Git clonado:
+      git -C /root/singulai-platform/frontend status
+
+
+🔐 SEGURANÇA (Verificar pontos críticos)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] .env.production protegido:
+      ls -la .env.production → -rw-r--r--
+
+  [ ] Sem credenciais em console
+  [ ] CORS configurado no Backend
+  [ ] Sem dados sensíveis em localStorage
+  [ ] Frontend rodando em HTTP (não HTTPS, por enquanto)
+
+
+⏱️  PERFORMANCE (Teste experiência)
+════════════════════════════════════════════════════════════════════════════════
+
+  [ ] Página carrega em <3 segundos
+  [ ] Botões respondem rapidamente
+  [ ] Não há freezes na navegação
+  [ ] Console não tem muitos warnings
+
+
+❌ TROUBLESHOOTING (Se algo der errado)
+════════════════════════════════════════════════════════════════════════════════
+
+  ⚠️  Frontend não inicia:
+      journalctl -u singulai-frontend -n 50 | grep -i error
+
+  ⚠️  Porta 8080 ocupada:
+      lsof -i :8080
+      kill -9 <PID>
+
+  ⚠️  Sem conexão com Backend:
+      curl http://localhost:3004/api/v1/blockchain/health
+
+  ⚠️  Node_modules corrompido:
+      rm -rf node_modules package-lock.json
+      npm install
+
+  ⚠️  Build falhou:
+      npm run build 2>&1 | tail -20
+
+
+📞 PRÓXIMAS ETAPAS (Após tudo OK)
+════════════════════════════════════════════════════════════════════════════════
+
+  1. [ ] Comunicar ao time que está rodando
+  2. [ ] Fazer backup da config
+  3. [ ] Documentar qualquer customização
+  4. [ ] Considerar Nginx (reverse proxy)
+  5. [ ] Considerar HTTPS (Let's Encrypt)
+  6. [ ] Configurar CI/CD (GitHub Actions)
+  7. [ ] Adicionar monitoramento (Sentry)
+  8. [ ] Configurar auto-backup
+
+
+✅ FINALIZAÇÃO
+════════════════════════════════════════════════════════════════════════════════
+
+Quando TODOS os itens estão checkados ✅:
+
+  ✅ Deploy CONCLUÍDO com sucesso
+  ✅ Frontend está em PRODUÇÃO
+  ✅ Backend está integrado
+  ✅ Sistema PRONTO para USUARIOS
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                          STATUS: PRONTO ✨
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Data:        01/01/2026
+Versão:      1.0
+Ambiente:    VPS Hostinger | Ubuntu 22.04 LTS
+IP:          72.60.147.56
+Frontend:    http://72.60.147.56:8080
+Backend:     http://72.60.147.56:3004
+
+═══════════════════════════════════════════════════════════════════════════════

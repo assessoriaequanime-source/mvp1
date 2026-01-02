@@ -3,6 +3,8 @@ import { Link, useLocation, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "@/components/web3/wallet-button";
+import { useWallet } from "@/hooks/useWallet";
+import { useSglBalance } from "@/hooks/useBlockchain";
 import { useApp } from "@/contexts/app-context";
 import logo from "@/assets/logo-singulai.png";
 import {
@@ -25,6 +27,8 @@ export function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
   const { language, setLanguage, t } = useApp();
+  const { address } = useWallet();
+  const { data: balanceData } = useSglBalance(address);
 
   const navItems = [
     { labelKey: "sidebar.overview", icon: LayoutGrid, href: "/dashboard" },
@@ -36,11 +40,11 @@ export function DashboardLayout() {
     { labelKey: "sidebar.settings", icon: Settings, href: "/dashboard/settings" },
   ];
 
-  // Mock wallet data
+  // wallet data - using address from useWallet which now reads from localStorage
   const walletData = {
-    isConnected: true,
-    address: "0x7F3a4B2c8D9E1f6A5B3C2D8E9F1A6B3C8D2E8B2c",
-    balance: "2,847.50",
+    isConnected: !!address,
+    address: address || "",
+    balance: balanceData?.balance || "0.00",
     network: "sepolia" as const,
   };
 
